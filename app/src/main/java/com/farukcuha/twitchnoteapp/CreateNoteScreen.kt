@@ -1,5 +1,6 @@
 package com.farukcuha.twitchnoteapp
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +24,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
@@ -36,12 +38,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
+enum class Mode {
+    UPDATE, CREATE
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateNoteScreen(
+    noteId: String? = null,
     navController: NavController,
     viewModel: CreateNoteScreenViewModel = viewModel()
 ) {
+    var mode = remember {
+        mutableStateOf(Mode.CREATE)
+    }
     var title = remember {
         mutableStateOf("")
     }
@@ -50,11 +60,26 @@ fun CreateNoteScreen(
     }
     val context = LocalContext.current
 
+    DisposableEffect(Unit) {
+        noteId?.let {
+            mode.value = Mode.UPDATE
+            val note = viewModel.getNoteById(it.toInt())
+            title.value = note?.title ?: ""
+            body.value = note?.body ?: ""
+        }
+        onDispose {
+
+        }
+    }
+
     Scaffold(
         topBar = {
             Surface(shadowElevation = 8.dp) {
                 TopAppBar(
-                    title = { Text(text = "Create a Note") },
+                    title = {
+                        if (mode.value == Mode.UPDATE) Text(text = "Update the Note")
+                        else Text(text = "Create a Note")
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(Icons.Filled.ArrowBack, null)
@@ -70,7 +95,8 @@ fun CreateNoteScreen(
                                 Toast.makeText(context, "Please fill the body!", Toast.LENGTH_SHORT).show()
                                 return@IconButton
                             }
-                            viewModel.createNote(title = title.value, body = body.value)
+                            if (mode.value == Mode.CREATE) viewModel.createNote(title = title.value, body = body.value)
+                            else viewModel.updateNoteByNoteId(noteId?.toInt()!!, title.value, body.value)
                             navController.navigateUp()
                         }) {
                             Icon(Icons.Filled.Save, null)

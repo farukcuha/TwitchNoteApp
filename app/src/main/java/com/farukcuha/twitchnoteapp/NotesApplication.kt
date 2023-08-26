@@ -14,6 +14,6 @@ class NotesApplication : Application() {
         db = Room.databaseBuilder(
             applicationContext,
             NotesDatabase::class.java, "notes-database"
-        ).build()
+        ).allowMainThreadQueries().build()
     }
 }

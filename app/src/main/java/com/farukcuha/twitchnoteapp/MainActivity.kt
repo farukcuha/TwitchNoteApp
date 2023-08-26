@@ -20,9 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.room.Room
 import com.farukcuha.twitchnoteapp.ui.theme.TwitchNoteAppTheme
 
@@ -34,7 +36,16 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "notes") {
                     composable("notes") { NotesScreen(navController = navController) }
-                    composable("create_a_note") { CreateNoteScreen(navController = navController) }
+                    composable(route = "create_a_note?note_id={note_id}", arguments = listOf(
+                        navArgument("note_id") {
+                            type = NavType.StringType
+                            nullable = true
+                        }
+                    )) {
+                        val arguments = requireNotNull(it.arguments)
+                        val noteId = arguments.getString("note_id")
+                        CreateNoteScreen(noteId, navController = navController)
+                    }
                 }
             }
         }

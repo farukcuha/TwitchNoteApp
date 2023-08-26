@@ -1,11 +1,18 @@
 package com.farukcuha.twitchnoteapp
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ClearAll
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -15,8 +22,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
@@ -37,12 +46,18 @@ fun NotesScreen(
     navController: NavController,
     viewModel: NotesScreenViewModel = viewModel()
 ) {
+    val notes = viewModel.notes?.collectAsState(emptyList())
     Scaffold(
         topBar = {
             Surface(shadowElevation = 8.dp) {
                 TopAppBar(
                     title = { Text(text = "Notes App") },
                     actions = {
+                        IconButton(onClick = {
+                            viewModel.clear()
+                        }) {
+                            Icon(Icons.Filled.ClearAll, null)
+                        }
                         IconButton(onClick = {
                             navController.navigate("create_a_note")
                         }) {
@@ -53,16 +68,22 @@ fun NotesScreen(
             }
         }
     ) {
-        LazyColumn(modifier = Modifier.padding(it)) {
-            items(viewModel.notes.size) { position ->
-                NoteView(viewModel.notes[position])
+        notes?.let { list ->
+            LazyColumn(modifier = Modifier.padding(it)) {
+                items(list.value.size) { position ->
+                    NoteView(list.value[position], onClickDelete = {
+                        viewModel.deleteNote(it)
+                    }, onClickEdit = { noteId ->
+                        navController.navigate("create_a_note?note_id=$noteId")
+                    })
+                }
             }
         }
     }
 }
 
 @Composable
-fun NoteView(note: NoteEntity) {
+fun NoteView(note: NoteEntity, onClickDelete: (NoteEntity) -> Unit, onClickEdit: (Int) -> Unit) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(4.dp)
@@ -71,7 +92,28 @@ fun NoteView(note: NoteEntity) {
             Text(text = note.title ?: "", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text(text = note.body ?: "",
                 maxLines = 2 , fontSize = 16.sp)
-            Text(text = note.time?.toToDate() ?: "", fontStyle = FontStyle.Italic)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = note.time?.toToDate() ?: "",
+                    fontStyle = FontStyle.Italic)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    IconButton(onClick = {
+                        note.id?.let{ onClickEdit(it) }
+                    }, modifier = Modifier.size(20.dp)) {
+                        Icon(Icons.Filled.Edit, null)
+                    }
+                    IconButton(onClick = {
+                        onClickDelete(note)
+                    }, modifier = Modifier.size(20.dp)) {
+                        Icon(Icons.Filled.Delete, null)
+                    }
+                }
+            }
         }
     }
 }

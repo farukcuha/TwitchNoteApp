@@ -1,18 +1,17 @@
 package com.farukcuha.twitchnoteapp
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class NotesScreenViewModel: ViewModel() {
-    var notes: List<NoteEntity> = mutableStateListOf()
+    var notes = NotesApplication.db?.notesDao()?.getNotes()
 
-    init {
-        viewModelScope.launch {
-            NotesApplication.db?.notesDao()?.getNotes()?.collect {
-                notes = it
-            }
-        }
+    fun clear() = viewModelScope.launch {
+        NotesApplication.db?.notesDao()?.clear()
+    }
+
+    fun deleteNote(noteEntity: NoteEntity) = viewModelScope.launch {
+        NotesApplication.db?.notesDao()?.deleteNote(noteEntity)
     }
 }
