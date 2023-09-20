@@ -2,7 +2,10 @@ package com.farukcuha.twitchnoteapp
 
 import android.app.Application
 import androidx.room.Room
+import com.farukcuha.twitchnoteapp.data.local.NotesDatabase
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class NotesApplication : Application() {
 
     companion object {

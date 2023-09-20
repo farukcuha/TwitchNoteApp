@@ -1,4 +1,4 @@
-package com.farukcuha.twitchnoteapp.ui.theme
+package com.farukcuha.twitchnoteapp.presentation.theme
 
 import android.app.Activity
 import android.os.Build

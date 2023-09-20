@@ -1,4 +1,4 @@
-package com.farukcuha.twitchnoteapp
+package com.farukcuha.twitchnoteapp.data.local
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.farukcuha.twitchnoteapp.data.model.entity.NoteEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -22,8 +23,8 @@ interface NotesDao {
     @Update
     suspend fun updateNote(noteEntity: NoteEntity?)
 
-    @Delete
-    suspend fun deleteNote(noteEntity: NoteEntity)
+    @Query("DELETE FROM NOTEENTITY WHERE id == :noteId")
+    suspend fun deleteNote(noteId: Int)
 
     @Query("DELETE FROM NOTEENTITY")
     suspend fun clear()

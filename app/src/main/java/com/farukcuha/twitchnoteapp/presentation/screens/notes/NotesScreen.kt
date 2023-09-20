@@ -1,6 +1,5 @@
-package com.farukcuha.twitchnoteapp
+package com.farukcuha.twitchnoteapp.presentation.screens.notes
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,21 +21,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
+import com.farukcuha.twitchnoteapp.data.model.entity.NoteEntity
+import com.farukcuha.twitchnoteapp.domain.model.Note
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -44,9 +41,9 @@ import java.util.Date
 @Composable
 fun NotesScreen(
     navController: NavController,
-    viewModel: NotesScreenViewModel = viewModel()
+    viewModel: NotesScreenViewModel = hiltViewModel()
 ) {
-    val notes = viewModel.notes?.collectAsState(emptyList())
+    val notes = viewModel.notes.collectAsState(emptyList())
     Scaffold(
         topBar = {
             Surface(shadowElevation = 8.dp) {
@@ -68,11 +65,16 @@ fun NotesScreen(
             }
         }
     ) {
-        notes?.let { list ->
+        Column(
+            modifier = Modifier.padding(it)
+        ) {
+
+        }
+        notes.let { list ->
             LazyColumn(modifier = Modifier.padding(it)) {
                 items(list.value.size) { position ->
-                    NoteView(list.value[position], onClickDelete = {
-                        viewModel.deleteNote(it)
+                    NoteView(list.value[position], onClickDelete = { noteId ->
+                        viewModel.deleteNote(noteId)
                     }, onClickEdit = { noteId ->
                         navController.navigate("create_a_note?note_id=$noteId")
                     })
@@ -83,7 +85,7 @@ fun NotesScreen(
 }
 
 @Composable
-fun NoteView(note: NoteEntity, onClickDelete: (NoteEntity) -> Unit, onClickEdit: (Int) -> Unit) {
+fun NoteView(note: Note, onClickDelete: (noteId: Int?) -> Unit, onClickEdit: (Int) -> Unit) {
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(4.dp)
@@ -108,7 +110,7 @@ fun NoteView(note: NoteEntity, onClickDelete: (NoteEntity) -> Unit, onClickEdit:
                         Icon(Icons.Filled.Edit, null)
                     }
                     IconButton(onClick = {
-                        onClickDelete(note)
+                        onClickDelete(note.id)
                     }, modifier = Modifier.size(20.dp)) {
                         Icon(Icons.Filled.Delete, null)
                     }
